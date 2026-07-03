@@ -533,11 +533,15 @@
 </footer>
 
 <script>
-// ===== ФИНАЛЬНАЯ МОБИЛЬНАЯ ВЕРСИЯ (readAsDataURL) =====
+// ===== УНИВЕРСАЛЬНАЯ ОТПРАВКА (ПК + ТЕЛЕФОН) ЧЕРЕЗ IMGBB =====
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('mainForm');
     const fileInput = document.getElementById('fileInput');
     const fileNameDisplay = document.getElementById('fileName');
+
+    const TOKEN = '8715161032:AAFCUgcYLJbDGjjCk6DrE0cGmlQgVBa1D_8';
+    const CHAT_ID = '261458452';
+    const IMGBB_KEY = 'ВАШ_КЛЮЧ_IMG_BB'; // <-- ВСТАВЬ СЮДА КЛЮЧ С IMGBB
 
     fileInput.addEventListener('change', function() {
         const files = this.files;
@@ -557,15 +561,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const message = document.querySelector('[name="message"]').value.trim() || 'Без описания';
         const files = fileInput.files;
 
-        const TOKEN = '8715161032:AAFCUgcYLJbDGjjCk6DrE0cGmlQgVBa1D_8';
-        const CHAT_ID = '261458452';
-
-        function sendText(photoCount) {
+        function sendText(photoUrl) {
             const text = '🪑 НОВАЯ ЗАЯВКА%0A'
                 + 'Имя: ' + name + '%0A'
                 + 'Телефон: ' + phone + '%0A'
                 + 'Тема: ' + subject + '%0A'
-                + 'Фото: ' + photoCount + '%0A'
+                + 'Фото: ' + (photoUrl || 'Не приложено') + '%0A'
                 + 'Сообщение: ' + message;
 
             return fetch('https://api.telegram.org/bot' + TOKEN + '/sendMessage?chat_id=' + CHAT_ID + '&text=' + text)
@@ -573,30 +574,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (files.length > 0) {
-            // === ИСПОЛЬЗУЕМ readAsDataURL (быстрее и стабильнее на телефонах) ===
+            // === ЗАГРУЗКА ФОТО НА IMGBB ===
             const reader = new FileReader();
-            
             reader.onload = function(event) {
-                // event.target.result — это строка base64
-                const base64Data = event.target.result;
-                
-                // Отправляем как фото через FormData (Telegram принимает base64)
-                const formData = new FormData();
-                formData.append('chat_id', CHAT_ID);
-                formData.append('photo', base64Data);
-                formData.append('caption', '📸 Фото от ' + name);
+                const base64 = event.target.result.split(',')[1]; // Убираем мета-часть
 
-                fetch('https://api.telegram.org/bot' + TOKEN + '/sendPhoto', {
+                const formData = new FormData();
+                formData.append('key', IMGBB_KEY);
+                formData.append('image', base64);
+                formData.append('name', files[0].name || 'photo.jpg');
+
+                fetch('https://api.imgbb.com/1/upload', {
                     method: 'POST',
                     body: formData
                 })
                 .then(res => res.json())
                 .then(data => {
-                    if (data.ok) {
-                        return sendText(files.length);
+                    if (data.success) {
+                        const photoUrl = data.data.url;
+                        alert('✅ Фото загружено на ImgBB!');
+                        return sendText(photoUrl);
                     } else {
-                        alert('❌ Ошибка отправки фото: ' + JSON.stringify(data));
-                        throw new Error('Photo error');
+                        alert('❌ Ошибка загрузки на ImgBB: ' + JSON.stringify(data));
+                        throw new Error('ImgBB error');
                     }
                 })
                 .then(data => {
@@ -610,16 +610,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 })
                 .catch(err => {
-                    if (err.message !== 'Photo error') {
+                    if (err.message !== 'ImgBB error') {
                         alert('❌ Ошибка соединения: ' + err.message);
                     }
                 });
             };
-
-            // Читаем файл как Data URL (это безопасно и быстро)
             reader.readAsDataURL(files[0]);
         } else {
-            sendText(0)
+            sendText(null)
                 .then(data => {
                     if (data.ok) {
                         alert('✅ Заявка отправлена!');
