@@ -498,16 +498,11 @@
 </footer>
 
 <script>
-// ===== ОТЛАДОЧНАЯ ВЕРСИЯ С АЛЕРТАМИ =====
+// ===== ИСПРАВЛЕННАЯ ВЕРСИЯ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ =====
 document.addEventListener('DOMContentLoaded', function() {
-    alert('✅ 1. Страница загружена, скрипт запущен.');
-
     const form = document.getElementById('mainForm');
     const fileInput = document.getElementById('fileInput');
     const fileNameDisplay = document.getElementById('fileName');
-
-    if (!form) alert('❌ Форма не найдена!');
-    if (!fileInput) alert('❌ fileInput не найден!');
 
     // Показываем имя выбранного файла
     fileInput.addEventListener('change', function() {
@@ -517,13 +512,11 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             fileNameDisplay.textContent = '📎 Выбрано ' + files.length + ' файлов (первый: ' + files[0].name + ')';
         }
-        alert('📎 Файл выбран: ' + files.length + ' шт.');
     });
 
     // Отправка формы
     form.addEventListener('submit', function(e) {
         e.preventDefault();
-        alert('🔍 2. Форма перехвачена! Начинаем сбор данных...');
 
         const name = document.querySelector('[name="name"]').value.trim() || 'Не указано';
         const phone = document.querySelector('[name="phone"]').value.trim() || 'Не указано';
@@ -531,15 +524,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const message = document.querySelector('[name="message"]').value.trim() || 'Без описания';
         const files = fileInput.files;
 
-        alert('📝 3. Данные собраны: Имя=' + name + ', Телефон=' + phone + ', Файлов=' + files.length);
-
         const TOKEN = '8715161032:AAFCUgcYLJbDGjjCk6DrE0cGmlQgVBa1D_8';
         const CHAT_ID = '261458452';
-        alert('🔑 4. Токен и CHAT_ID установлены.');
 
         // ===== ФУНКЦИЯ ОТПРАВКИ ТЕКСТА =====
         function sendText(photoCount) {
-            alert('✉️ 5. Отправляем текст...');
             const text = '🪑 НОВАЯ ЗАЯВКА%0A'
                 + 'Имя: ' + name + '%0A'
                 + 'Телефон: ' + phone + '%0A'
@@ -548,58 +537,62 @@ document.addEventListener('DOMContentLoaded', function() {
                 + 'Сообщение: ' + message;
 
             return fetch('https://api.telegram.org/bot' + TOKEN + '/sendMessage?chat_id=' + CHAT_ID + '&text=' + text)
-                .then(res => res.json())
-                .then(data => {
-                    alert('📬 6. Ответ от Telegram: ' + (data.ok ? 'OK' : 'ОШИБКА: ' + JSON.stringify(data)));
-                    return data;
-                });
+                .then(res => res.json());
         }
 
         // ===== ЕСЛИ ЕСТЬ ФОТО =====
         if (files.length > 0) {
-            alert('📸 5a. Есть фото, отправляем...');
-            const formData = new FormData();
-            formData.append('chat_id', CHAT_ID);
-            formData.append('photo', files[0]);
-            formData.append('caption', '📸 Фото от ' + name);
+            // Используем FileReader, чтобы преобразовать файл в Blob
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                // Создаем Blob из прочитанных данных
+                const blob = new Blob([event.target.result], { type: files[0].type });
+                
+                // Отправляем Blob в Telegram
+                const formData = new FormData();
+                formData.append('chat_id', CHAT_ID);
+                formData.append('photo', blob, files[0].name);
+                formData.append('caption', '📸 Фото от ' + name);
 
-            fetch('https://api.telegram.org/bot' + TOKEN + '/sendPhoto', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert('📸 6a. Ответ по фото: ' + (data.ok ? 'OK' : 'ОШИБКА: ' + JSON.stringify(data)));
-                if (data.ok) {
-                    return sendText(files.length);
-                } else {
-                    alert('❌ Ошибка отправки фото: ' + JSON.stringify(data));
-                    throw new Error('Photo error');
-                }
-            })
-            .then(data => {
-                if (data && data.ok) {
-                    alert('✅ ВСЁ ОТПРАВЛЕНО! Заявка завершена.');
-                    form.reset();
-                    fileNameDisplay.textContent = 'Файл не выбран';
-                }
-            })
-            .catch(err => {
-                if (err.message !== 'Photo error') {
+                fetch('https://api.telegram.org/bot' + TOKEN + '/sendPhoto', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.ok) {
+                        // После успешной отправки фото, отправляем текст
+                        sendText(files.length)
+                            .then(data => {
+                                if (data.ok) {
+                                    alert('✅ Заявка с фото отправлена! Мы свяжемся с вами.');
+                                    form.reset();
+                                    fileNameDisplay.textContent = 'Файл не выбран';
+                                } else {
+                                    alert('❌ Ошибка отправки текста: ' + JSON.stringify(data));
+                                }
+                            });
+                    } else {
+                        alert('❌ Ошибка отправки фото. Попробуйте ещё раз.');
+                    }
+                })
+                .catch(err => {
                     alert('❌ Ошибка соединения: ' + err.message);
-                }
-            });
+                });
+            };
+
+            // Читаем файл как ArrayBuffer
+            reader.readAsArrayBuffer(files[0]);
         } else {
             // ===== ЕСЛИ ФОТО НЕТ =====
-            alert('📝 5b. Фото нет, отправляем только текст.');
             sendText(0)
                 .then(data => {
                     if (data.ok) {
-                        alert('✅ ВСЁ ОТПРАВЛЕНО! Заявка завершена.');
+                        alert('✅ Заявка отправлена! Мы свяжемся с вами.');
                         form.reset();
                         fileNameDisplay.textContent = 'Файл не выбран';
                     } else {
-                        alert('❌ Ошибка отправки текста: ' + JSON.stringify(data));
+                        alert('❌ Ошибка отправки: ' + JSON.stringify(data));
                     }
                 })
                 .catch(err => {
@@ -609,7 +602,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// ===== КАТАЛОГ (ТОВАРЫ) =====
+// ===== КАТАЛОГ (ТОВАРЫ) - ЭТА ЧАСТЬ БЕЗ ИЗМЕНЕНИЙ =====
 const products = [
     {
         id: 1,
@@ -678,6 +671,5 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 
 renderProducts('all');
 </script>
-
 </body>
 </html>
