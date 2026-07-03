@@ -422,26 +422,60 @@
         </div>
     </section>
 
-    <!-- ===== RESTORATION SERVICE ===== -->
-    <section id="restoration" class="restoration">
-        <div class="container">
-            <div>
-                <h2>Реставрация по вашему заказу</h2>
-                <p style="font-size:1.1rem; margin:12px 0;">«Вернём первоначальный вид и даже лучше любому предмету мягкой мебели»</p>
-                <ul>
-                    <li>Замена обивки и поролона</li>
-                    <li>Укрепление каркаса</li>
-                    <li>Тонировка и патинирование</li>
-                    <li>Ручная отстрочка — как на дизайнерской мебели</li>
-                </ul>
-                <p><strong>Срок:</strong> от 3 до 10 дней в зависимости от сложности.</p>
-                <a href="#orderForm" class="btn" style="margin-top:18px;">Оставить заявку</a>
-            </div>
-            <div style="background:#cfc6bc; border-radius:20px; min-height:200px; display:flex; align-items:center; justify-content:center; color:#5a4f44; padding:20px;">
-                📸 Пришлите фото вашей мебели — мы оценим за 1 час
-            </div>
+   <!-- ===== RESTORATION SERVICE ===== -->
+<section id="restoration" class="restoration">
+    <div class="container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center;">
+
+        <!-- Левая часть: описание -->
+        <div>
+            <h2 style="font-size: 2.4rem; font-weight: 700;">Реставрация по вашему заказу</h2>
+            <p style="font-size:1.1rem; margin:12px 0; font-style: italic; color: #3d3d3d;">
+                «Вернём первоначальный вид и даже лучше любому предмету мягкой мебели»
+            </p>
+            <ul style="list-style: none; margin: 20px 0 30px; padding: 0;">
+                <li style="padding: 8px 0; padding-left: 28px; background: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"%23b8863a\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"/></svg>') left center no-repeat; background-size: 18px;">
+                    Замена обивки и поролона
+                </li>
+                <li style="padding: 8px 0; padding-left: 28px; background: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"%23b8863a\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"/></svg>') left center no-repeat; background-size: 18px;">
+                    Укрепление каркаса
+                </li>
+                <li style="padding: 8px 0; padding-left: 28px; background: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"%23b8863a\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"/></svg>') left center no-repeat; background-size: 18px;">
+                    Тонировка и патинирование
+                </li>
+                <li style="padding: 8px 0; padding-left: 28px; background: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"%23b8863a\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"/></svg>') left center no-repeat; background-size: 18px;">
+                    Ручная отстрочка — как на дизайнерской мебели
+                </li>
+            </ul>
+            <p><strong>Срок:</strong> от 3 до 10 дней в зависимости от сложности.</p>
         </div>
-    </section>
+
+        <!-- Правая часть: большая кликабельная кнопка-призыв (заменяет серый квадрат) -->
+        <div style="text-align: center;">
+            <a href="#orderForm" 
+               style="display: inline-block; 
+                      background: #2c3e2f; 
+                      color: #fff; 
+                      padding: 40px 30px; 
+                      border-radius: 24px; 
+                      text-decoration: none; 
+                      font-weight: 700; 
+                      font-size: 1.4rem; 
+                      box-shadow: 0 8px 30px rgba(44, 62, 47, 0.3); 
+                      transition: 0.3s; 
+                      width: 100%; 
+                      max-width: 380px;
+                      border: 2px dashed #b8863a;">
+                <div style="font-size: 3rem; margin-bottom: 8px;">📸</div>
+                <div>Пришлите фото вашей мебели</div>
+                <div style="font-size: 0.9rem; font-weight: 400; opacity: 0.8; margin-top: 6px;">Мы оценим за 1 час →</div>
+            </a>
+            <p style="margin-top: 16px; color: #555; font-size: 0.9rem;">
+                Нажмите, чтобы перейти к форме заявки
+            </p>
+        </div>
+
+    </div>
+</section>
 
     <!-- ===== ФОРМА С ЗАГРУЗКОЙ ФОТО (РАБОТАЕТ С ТЕЛЕФОНА) ===== -->
     <section id="orderForm" class="container form-section">
