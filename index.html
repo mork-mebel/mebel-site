@@ -498,11 +498,16 @@
 </footer>
 
 <script>
-// ===== РАБОЧАЯ ФОРМА (С ФОТО И БЕЗ) =====
+// ===== ОТЛАДОЧНАЯ ВЕРСИЯ С АЛЕРТАМИ =====
 document.addEventListener('DOMContentLoaded', function() {
+    alert('✅ 1. Страница загружена, скрипт запущен.');
+
     const form = document.getElementById('mainForm');
     const fileInput = document.getElementById('fileInput');
     const fileNameDisplay = document.getElementById('fileName');
+
+    if (!form) alert('❌ Форма не найдена!');
+    if (!fileInput) alert('❌ fileInput не найден!');
 
     // Показываем имя выбранного файла
     fileInput.addEventListener('change', function() {
@@ -512,11 +517,13 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             fileNameDisplay.textContent = '📎 Выбрано ' + files.length + ' файлов (первый: ' + files[0].name + ')';
         }
+        alert('📎 Файл выбран: ' + files.length + ' шт.');
     });
 
     // Отправка формы
     form.addEventListener('submit', function(e) {
         e.preventDefault();
+        alert('🔍 2. Форма перехвачена! Начинаем сбор данных...');
 
         const name = document.querySelector('[name="name"]').value.trim() || 'Не указано';
         const phone = document.querySelector('[name="phone"]').value.trim() || 'Не указано';
@@ -524,11 +531,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const message = document.querySelector('[name="message"]').value.trim() || 'Без описания';
         const files = fileInput.files;
 
+        alert('📝 3. Данные собраны: Имя=' + name + ', Телефон=' + phone + ', Файлов=' + files.length);
+
         const TOKEN = '8715161032:AAFCUgcYLJbDGjjCk6DrE0cGmlQgVBa1D_8';
         const CHAT_ID = '261458452';
+        alert('🔑 4. Токен и CHAT_ID установлены.');
 
         // ===== ФУНКЦИЯ ОТПРАВКИ ТЕКСТА =====
         function sendText(photoCount) {
+            alert('✉️ 5. Отправляем текст...');
             const text = '🪑 НОВАЯ ЗАЯВКА%0A'
                 + 'Имя: ' + name + '%0A'
                 + 'Телефон: ' + phone + '%0A'
@@ -537,11 +548,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 + 'Сообщение: ' + message;
 
             return fetch('https://api.telegram.org/bot' + TOKEN + '/sendMessage?chat_id=' + CHAT_ID + '&text=' + text)
-                .then(res => res.json());
+                .then(res => res.json())
+                .then(data => {
+                    alert('📬 6. Ответ от Telegram: ' + (data.ok ? 'OK' : 'ОШИБКА: ' + JSON.stringify(data)));
+                    return data;
+                });
         }
 
         // ===== ЕСЛИ ЕСТЬ ФОТО =====
         if (files.length > 0) {
+            alert('📸 5a. Есть фото, отправляем...');
             const formData = new FormData();
             formData.append('chat_id', CHAT_ID);
             formData.append('photo', files[0]);
@@ -553,6 +569,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(res => res.json())
             .then(data => {
+                alert('📸 6a. Ответ по фото: ' + (data.ok ? 'OK' : 'ОШИБКА: ' + JSON.stringify(data)));
                 if (data.ok) {
                     return sendText(files.length);
                 } else {
@@ -561,12 +578,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .then(data => {
-                if (data.ok) {
-                    alert('✅ Заявка с фото отправлена! Мы свяжемся с вами.');
+                if (data && data.ok) {
+                    alert('✅ ВСЁ ОТПРАВЛЕНО! Заявка завершена.');
                     form.reset();
                     fileNameDisplay.textContent = 'Файл не выбран';
-                } else {
-                    alert('❌ Ошибка отправки текста: ' + JSON.stringify(data));
                 }
             })
             .catch(err => {
@@ -576,14 +591,15 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } else {
             // ===== ЕСЛИ ФОТО НЕТ =====
+            alert('📝 5b. Фото нет, отправляем только текст.');
             sendText(0)
                 .then(data => {
                     if (data.ok) {
-                        alert('✅ Заявка отправлена! Мы свяжемся с вами.');
+                        alert('✅ ВСЁ ОТПРАВЛЕНО! Заявка завершена.');
                         form.reset();
                         fileNameDisplay.textContent = 'Файл не выбран';
                     } else {
-                        alert('❌ Ошибка отправки: ' + JSON.stringify(data));
+                        alert('❌ Ошибка отправки текста: ' + JSON.stringify(data));
                     }
                 })
                 .catch(err => {
