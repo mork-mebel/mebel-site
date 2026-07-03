@@ -500,59 +500,64 @@
 </footer>
 
 <script>
-// ===== ОТЛАДОЧНАЯ ВЕРСИЯ ФОРМЫ (ПОКАЗЫВАЕТ ОШИБКИ) =====
+// ===== СУПЕР-ОТЛАДКА ДЛЯ ФОТО =====
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('mainForm');
     if (!form) {
-        alert('❌ Ошибка: форма с id="mainForm" не найдена на странице!');
+        alert('❌ Форма с id="mainForm" не найдена!');
         return;
     }
 
+    // Проверяем поле fileInput
+    const fileInput = document.getElementById('fileInput');
+    if (!fileInput) {
+        alert('❌ Поле fileInput не найдено! Проверь id в HTML.');
+        return;
+    } else {
+        alert('✅ Поле fileInput найдено. Тип: ' + fileInput.type);
+    }
+
+    // Следим за изменением файлов (для отладки)
+    fileInput.addEventListener('change', function() {
+        const count = this.files.length;
+        alert('📎 Выбрано файлов: ' + count + (count > 0 ? ' (первый: ' + this.files[0].name + ')' : ''));
+        const label = document.getElementById('fileName');
+        if (label) {
+            label.textContent = count > 0 ? '📎 Выбрано ' + count + ' файлов' : 'Файлы не выбраны';
+        }
+    });
+
     form.addEventListener('submit', function(e) {
         e.preventDefault();
-        alert('🔍 Отладка: форма перехвачена, начинаем отправку...');
+        alert('🔍 Форма отправлена. Проверяем файлы...');
 
-        // Собираем данные
         const name = document.querySelector('[name="name"]')?.value || 'Не указано';
         const phone = document.querySelector('[name="phone"]')?.value || 'Не указано';
         const subject = document.querySelector('[name="subject"]')?.value || 'Не указано';
         const message = document.querySelector('[name="message"]')?.value || 'Без описания';
+        
         const fileInput = document.getElementById('fileInput');
         const files = fileInput ? fileInput.files : [];
 
-        alert(`📝 Данные: Имя=${name}, Телефон=${phone}, Фото=${files.length} шт.`);
+        alert('📊 Итог: имя=' + name + ', файлов=' + files.length);
 
-        // ТВОИ ДАННЫЕ (проверь их!)
+        // Если файлов нет — показываем предупреждение
+        if (files.length === 0) {
+            alert('⚠️ Файлы не выбраны! Нажми на пунктирную область и выбери фото.');
+            return;
+        }
+
+        // ТВОИ ДАННЫЕ
         const TOKEN = '8715161032:AAFCUgcYLJbDGjjCk6DrE0cGmlQgVBa1D_8';
         const CHAT_ID = '261458452';
 
-        // Проверяем токен через getMe
-        fetch(`https://api.telegram.org/bot${TOKEN}/getMe`)
-            .then(res => res.json())
-            .then(data => {
-                if (!data.ok) {
-                    alert('❌ Бот не отвечает! Проверь токен. Ошибка: ' + JSON.stringify(data));
-                    return;
-                }
-                alert('✅ Бот жив! Имя: ' + data.result.username);
-                // Теперь отправляем заявку
-                sendFormData(name, phone, subject, message, files, TOKEN, CHAT_ID);
-            })
-            .catch(err => {
-                alert('❌ Ошибка соединения с Telegram: ' + err.message);
-            });
-    });
-});
-
-function sendFormData(name, phone, subject, message, files, TOKEN, CHAT_ID) {
-    if (files.length > 0) {
         // Отправляем первое фото
         const formData = new FormData();
         formData.append('chat_id', CHAT_ID);
         formData.append('photo', files[0]);
-        formData.append('caption', `📸 Фото от ${name}`);
+        formData.append('caption', '📸 Фото от ' + name);
 
-        fetch(`https://api.telegram.org/bot${TOKEN}/sendPhoto`, {
+        fetch('https://api.telegram.org/bot' + TOKEN + '/sendPhoto', {
             method: 'POST',
             body: formData
         })
@@ -566,25 +571,22 @@ function sendFormData(name, phone, subject, message, files, TOKEN, CHAT_ID) {
             }
         })
         .catch(err => {
-            alert('❌ Ошибка при отправке фото: ' + err.message);
+            alert('❌ Ошибка соединения: ' + err.message);
         });
-    } else {
-        // Отправляем только текст
-        sendTextMessage(name, phone, subject, message, 0, TOKEN, CHAT_ID);
-    }
-}
+    });
+});
 
 function sendTextMessage(name, phone, subject, message, photoCount, TOKEN, CHAT_ID) {
-    const text = `🪑 НОВАЯ ЗАЯВКА%0AИмя: ${name}%0AТелефон: ${phone}%0AТема: ${subject}%0AФото: ${photoCount}%0AСообщение: ${message}`;
+    const text = '🪑 НОВАЯ ЗАЯВКА%0AИмя: ' + name + '%0AТелефон: ' + phone + '%0AТема: ' + subject + '%0AФото: ' + photoCount + '%0AСообщение: ' + message;
 
-    fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${text}`)
+    fetch('https://api.telegram.org/bot' + TOKEN + '/sendMessage?chat_id=' + CHAT_ID + '&text=' + text)
         .then(res => res.json())
         .then(data => {
             if (data.ok) {
-                alert('✅ Заявка полностью отправлена! Мы свяжемся с вами.');
+                alert('✅ Заявка полностью отправлена!');
                 document.getElementById('mainForm').reset();
-                const fileLabel = document.getElementById('fileName');
-                if (fileLabel) fileLabel.textContent = 'Файлы не выбраны';
+                const label = document.getElementById('fileName');
+                if (label) label.textContent = 'Файлы не выбраны';
             } else {
                 alert('❌ Ошибка отправки текста: ' + JSON.stringify(data));
             }
