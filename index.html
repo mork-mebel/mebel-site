@@ -498,7 +498,7 @@
 </footer>
 
 <script>
-// ===== ИСПРАВЛЕННАЯ ВЕРСИЯ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ =====
+// ===== ФИНАЛЬНАЯ ВЕРСИЯ ДЛЯ МОБИЛЬНЫХ (С ПРИНУДИТЕЛЬНЫМ СБРОСОМ) =====
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('mainForm');
     const fileInput = document.getElementById('fileInput');
@@ -522,6 +522,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const phone = document.querySelector('[name="phone"]').value.trim() || 'Не указано';
         const subject = document.querySelector('[name="subject"]').value.trim() || 'Не указано';
         const message = document.querySelector('[name="message"]').value.trim() || 'Без описания';
+        
+        // БЕРЁМ ФАЙЛЫ ЗАНОВО ПРЯМО СЕЙЧАС
         const files = fileInput.files;
 
         const TOKEN = '8715161032:AAFCUgcYLJbDGjjCk6DrE0cGmlQgVBa1D_8';
@@ -542,16 +544,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // ===== ЕСЛИ ЕСТЬ ФОТО =====
         if (files.length > 0) {
-            // Используем FileReader, чтобы преобразовать файл в Blob
+            // ПРИНУДИТЕЛЬНО читаем файл ЗАНОВО каждый раз
             const reader = new FileReader();
+            
             reader.onload = function(event) {
-                // Создаем Blob из прочитанных данных
-                const blob = new Blob([event.target.result], { type: files[0].type });
+                // Создаём Blob из данных
+                const blob = new Blob([event.target.result], { type: files[0].type || 'image/jpeg' });
                 
-                // Отправляем Blob в Telegram
                 const formData = new FormData();
                 formData.append('chat_id', CHAT_ID);
-                formData.append('photo', blob, files[0].name);
+                formData.append('photo', blob, files[0].name || 'photo.jpg');
                 formData.append('caption', '📸 Фото от ' + name);
 
                 fetch('https://api.telegram.org/bot' + TOKEN + '/sendPhoto', {
@@ -561,23 +563,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(res => res.json())
                 .then(data => {
                     if (data.ok) {
-                        // После успешной отправки фото, отправляем текст
-                        sendText(files.length)
-                            .then(data => {
-                                if (data.ok) {
-                                    alert('✅ Заявка с фото отправлена! Мы свяжемся с вами.');
-                                    form.reset();
-                                    fileNameDisplay.textContent = 'Файл не выбран';
-                                } else {
-                                    alert('❌ Ошибка отправки текста: ' + JSON.stringify(data));
-                                }
-                            });
+                        return sendText(files.length);
                     } else {
-                        alert('❌ Ошибка отправки фото. Попробуйте ещё раз.');
+                        alert('❌ Ошибка отправки фото: ' + JSON.stringify(data));
+                        throw new Error('Photo error');
+                    }
+                })
+                .then(data => {
+                    if (data && data.ok) {
+                        alert('✅ Заявка с фото отправлена!');
+                        // ПРИНУДИТЕЛЬНО СБРАСЫВАЕМ ПОЛЕ
+                        fileInput.value = '';
+                        fileNameDisplay.textContent = 'Файл не выбран';
+                        form.reset();
+                    } else {
+                        alert('❌ Ошибка отправки текста: ' + JSON.stringify(data));
                     }
                 })
                 .catch(err => {
-                    alert('❌ Ошибка соединения: ' + err.message);
+                    if (err.message !== 'Photo error') {
+                        alert('❌ Ошибка соединения: ' + err.message);
+                    }
                 });
             };
 
@@ -588,8 +594,9 @@ document.addEventListener('DOMContentLoaded', function() {
             sendText(0)
                 .then(data => {
                     if (data.ok) {
-                        alert('✅ Заявка отправлена! Мы свяжемся с вами.');
+                        alert('✅ Заявка отправлена!');
                         form.reset();
+                        fileInput.value = '';
                         fileNameDisplay.textContent = 'Файл не выбран';
                     } else {
                         alert('❌ Ошибка отправки: ' + JSON.stringify(data));
@@ -602,7 +609,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// ===== КАТАЛОГ (ТОВАРЫ) - ЭТА ЧАСТЬ БЕЗ ИЗМЕНЕНИЙ =====
+// ===== КАТАЛОГ (ТОВАРЫ) - БЕЗ ИЗМЕНЕНИЙ =====
 const products = [
     {
         id: 1,
