@@ -232,7 +232,7 @@
 </footer>
 
 <script>
-// ===== ГАРАНТИРОВАННО РАБОТАЮЩАЯ ВЕРСИЯ (ПРЯМАЯ ОТПРАВКА) =====
+// ===== ФИНАЛЬНАЯ ВЕРСИЯ: ОТПРАВКА ТЕКСТА + СЖАТОГО ФОТО =====
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('mainForm');
     const fileInput = document.getElementById('fileInput');
@@ -247,7 +247,88 @@ document.addEventListener('DOMContentLoaded', function() {
         fileNameDisplay.textContent = files.length === 0 ? 'Файл не выбран' : '📎 Выбрано ' + files.length + ' файлов';
     });
 
-    // Отправка формы
+    // === ФУНКЦИЯ СЖАТИЯ ФОТО (уменьшает до 1 МБ) ===
+    function compressImage(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    // Создаём canvas для сжатия
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Уменьшаем максимальный размер до 1200px (это даёт ~1 МБ)
+                    const maxSize = 1200;
+                    if (width > height) {
+                        if (width > maxSize) {
+                            height = height * (maxSize / width);
+                            width = maxSize;
+                        }
+                    } else {
+                        if (height > maxSize) {
+                            width = width * (maxSize / height);
+                            height = maxSize;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Конвертируем в JPEG с качеством 0.85
+                    canvas.toBlob(function(blob) {
+                        // Создаём новый файл из сжатого Blob
+                        const compressedFile = new File([blob], file.name || 'photo.jpg', {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        });
+                        resolve(compressedFile);
+                    }, 'image/jpeg', 0.85);
+                };
+                img.onerror = reject;
+                img.src = event.target.result;
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // === ФУНКЦИЯ ОТПРАВКИ ТЕКСТА ===
+    function sendText(name, phone, subject, message, photoInfo) {
+        const text = '🪑 НОВАЯ ЗАЯВКА\n'
+            + 'Имя: ' + name + '\n'
+            + 'Телефон: ' + phone + '\n'
+            + 'Тема: ' + subject + '\n'
+            + 'Фото: ' + photoInfo + '\n'
+            + 'Сообщение: ' + message;
+
+        const formData = new FormData();
+        formData.append('chat_id', CHAT_ID);
+        formData.append('text', text);
+
+        return fetch('https://api.telegram.org/bot' + TOKEN + '/sendMessage', {
+            method: 'POST',
+            body: formData
+        }).then(res => res.json());
+    }
+
+    // === ФУНКЦИЯ ОТПРАВКИ СЖАТОГО ФОТО ===
+    function sendPhoto(file, caption) {
+        const formData = new FormData();
+        formData.append('chat_id', CHAT_ID);
+        formData.append('photo', file, file.name || 'photo.jpg');
+        formData.append('caption', caption);
+
+        return fetch('https://api.telegram.org/bot' + TOKEN + '/sendPhoto', {
+            method: 'POST',
+            body: formData
+        }).then(res => res.json());
+    }
+
+    // === ОБРАБОТКА ОТПРАВКИ ФОРМЫ ===
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -257,58 +338,34 @@ document.addEventListener('DOMContentLoaded', function() {
         const message = document.querySelector('[name="message"]').value.trim() || 'Без описания';
         const files = fileInput.files;
 
-        // Формируем текст сообщения
-        let text = '🪑 НОВАЯ ЗАЯВКА\n';
-        text += 'Имя: ' + name + '\n';
-        text += 'Телефон: ' + phone + '\n';
-        text += 'Тема: ' + subject + '\n';
-        text += 'Сообщение: ' + message + '\n';
-        text += 'Фото: ' + (files.length > 0 ? 'Приложено ' + files.length + ' шт.' : 'Не приложено');
-
-        // Отправляем текст
-        function sendText() {
-            const formData = new FormData();
-            formData.append('chat_id', CHAT_ID);
-            formData.append('text', text);
-
-            return fetch('https://api.telegram.org/bot' + TOKEN + '/sendMessage', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json());
-        }
-
-        // Отправляем фото
-        function sendPhoto(file) {
-            const formData = new FormData();
-            formData.append('chat_id', CHAT_ID);
-            formData.append('photo', file);
-            formData.append('caption', '📸 Фото от ' + name);
-
-            return fetch('https://api.telegram.org/bot' + TOKEN + '/sendPhoto', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json());
-        }
-
-        // Если есть фото — отправляем сначала фото, потом текст
+        // Если есть фото — сжимаем и отправляем
         if (files.length > 0) {
-            sendPhoto(files[0])
+            compressImage(files[0])
+                .then(compressedFile => {
+                    return sendPhoto(compressedFile, '📸 Фото от ' + name);
+                })
                 .then(data => {
                     if (!data.ok) {
-                        alert('❌ Ошибка отправки фото: ' + JSON.stringify(data));
-                        throw new Error('Photo error');
+                        // Если сжатое фото не отправилось — пробуем отправить оригинал (на всякий случай)
+                        return sendPhoto(files[0], '📸 Фото от ' + name + ' (оригинал)');
                     }
-                    return sendText();
+                    return data;
                 })
                 .then(data => {
                     if (data.ok) {
-                        alert('✅ Заявка с фото отправлена!');
+                        return sendText(name, phone, subject, message, 'Приложено сжатое фото');
+                    } else {
+                        alert('❌ Ошибка отправки фото: ' + JSON.stringify(data));
+                        throw new Error('Photo error');
+                    }
+                })
+                .then(data => {
+                    if (data && data.ok) {
+                        alert('✅ Заявка с фото отправлена! Мы свяжемся с вами.');
                         form.reset();
                         fileInput.value = '';
                         fileNameDisplay.textContent = 'Файл не выбран';
-                    } else {
+                    } else if (data) {
                         alert('❌ Ошибка отправки текста: ' + JSON.stringify(data));
                     }
                 })
@@ -318,12 +375,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
         } else {
-            // Без фото — только текст
-            sendText()
+            // === БЕЗ ФОТО ===
+            sendText(name, phone, subject, message, 'Не приложено')
                 .then(data => {
                     if (data.ok) {
-                        alert('✅ Заявка отправлена!');
+                        alert('✅ Заявка отправлена! Мы свяжемся с вами.');
                         form.reset();
+                        fileInput.value = '';
+                        fileNameDisplay.textContent = 'Файл не выбран';
                     } else {
                         alert('❌ Ошибка отправки: ' + JSON.stringify(data));
                     }
@@ -335,7 +394,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// ===== КАТАЛОГ =====
+// ===== КАТАЛОГ (БЕЗ ИЗМЕНЕНИЙ) =====
 const products = [
     {
         id: 1,
