@@ -7,356 +7,74 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet" />
     <style>
-        /* ===== RESET & BASE ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f8f5f0;
-            color: #1e1e1e;
-            line-height: 1.6;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        img {
-            max-width: 100%;
-            display: block;
-            border-radius: 12px;
-        }
-        .btn {
-            display: inline-block;
-            background: #2c3e2f;
-            color: #fff;
-            padding: 14px 32px;
-            border-radius: 60px;
-            text-decoration: none;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: 0.3s;
-            font-size: 1rem;
-        }
-        .btn:hover {
-            background: #1f2c21;
-            transform: scale(1.02);
-        }
-        .btn-outline {
-            background: transparent;
-            border: 2px solid #2c3e2f;
-            color: #2c3e2f;
-        }
-        .btn-outline:hover {
-            background: #2c3e2f;
-            color: #fff;
-        }
-        .section-title {
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin-bottom: 24px;
-            letter-spacing: -0.02em;
-        }
-        .section-subtitle {
-            color: #5a5a5a;
-            margin-bottom: 40px;
-            font-size: 1.15rem;
-        }
-
-        /* ===== HEADER ===== */
-        header {
-            background: #fff;
-            padding: 16px 0;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.04);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .header-inner {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        .logo {
-            font-size: 1.6rem;
-            font-weight: 800;
-            letter-spacing: -0.03em;
-        }
-        .logo span {
-            color: #b8863a;
-        }
-        .nav {
-            display: flex;
-            gap: 28px;
-            font-weight: 500;
-        }
-        .nav a {
-            text-decoration: none;
-            color: #1e1e1e;
-            transition: 0.2s;
-        }
-        .nav a:hover {
-            color: #b8863a;
-        }
-        .header-phone {
-            font-weight: 600;
-            color: #2c3e2f;
-        }
-
-        /* ===== HERO ===== */
-        .hero {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 48px;
-            align-items: center;
-            padding: 60px 0 80px;
-        }
-        .hero h1 {
-            font-size: 3.2rem;
-            font-weight: 800;
-            line-height: 1.1;
-            letter-spacing: -0.02em;
-        }
-        .hero h1 span {
-            color: #b8863a;
-        }
-        .hero p {
-            font-size: 1.2rem;
-            color: #3d3d3d;
-            margin: 20px 0 32px;
-        }
-        .hero-buttons {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-        .hero-image {
-            background: #e8e0d8;
-            border-radius: 20px;
-            overflow: hidden;
-            min-height: 320px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: #7a7a7a;
-        }
-        .hero-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            min-height: 320px;
-        }
-
-        /* ===== BENEFITS ===== */
-        .benefits {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
-            padding: 40px 0 60px;
-            border-top: 1px solid #ddd;
-        }
-        .benefit-item {
-            text-align: center;
-        }
-        .benefit-item h3 {
-            font-size: 1.5rem;
-            margin-bottom: 6px;
-        }
-        .benefit-item p {
-            color: #555;
-        }
-
-        /* ===== CATALOG ===== */
-        .catalog-controls {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 32px;
-            flex-wrap: wrap;
-        }
-        .filter-btn {
-            padding: 8px 20px;
-            border-radius: 40px;
-            border: 1px solid #ccc;
-            background: #fff;
-            cursor: pointer;
-            font-weight: 500;
-            transition: 0.2s;
-        }
-        .filter-btn.active {
-            background: #2c3e2f;
-            color: #fff;
-            border-color: #2c3e2f;
-        }
-        .catalog-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 30px;
-            margin-bottom: 60px;
-        }
-        .product-card {
-            background: #fff;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.05);
-            transition: 0.3s;
-        }
-        .product-card:hover {
-            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
-            transform: translateY(-4px);
-        }
-        .product-card .image {
-            height: 220px;
-            background: #e0d8d0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #888;
-            font-size: 0.9rem;
-        }
-        .product-card .image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .product-card .body {
-            padding: 20px;
-        }
-        .product-card .body h3 {
-            font-size: 1.2rem;
-            margin-bottom: 6px;
-        }
-        .product-card .body .status {
-            font-size: 0.85rem;
-            color: #b8863a;
-            font-weight: 600;
-        }
-        .product-card .body .price {
-            font-size: 1.6rem;
-            font-weight: 700;
-            margin: 10px 0 14px;
-        }
-        .product-card .body .desc {
-            color: #555;
-            font-size: 0.95rem;
-            margin-bottom: 14px;
-        }
-
-        /* ===== RESTORATION SERVICE ===== */
-        .restoration {
-            background: #e8e0d8;
-            padding: 60px 0;
-            border-radius: 24px;
-            margin: 40px 0;
-        }
-        .restoration .container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-        }
-        .restoration h2 {
-            font-size: 2.4rem;
-            font-weight: 700;
-        }
-        .restoration ul {
-            list-style: none;
-            margin: 20px 0 30px;
-        }
-        .restoration ul li {
-            padding: 8px 0;
-            padding-left: 28px;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%23b8863a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') left center no-repeat;
-            background-size: 18px;
-        }
-        .restoration .btn {
-            margin-top: 8px;
-        }
-
-        /* ===== FORM ===== */
-        .form-section {
-            padding: 60px 0;
-        }
-        .form-section form {
-            max-width: 600px;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
-        .form-section input,
-        .form-section textarea {
-            padding: 14px 18px;
-            border-radius: 12px;
-            border: 1px solid #ccc;
-            font-size: 1rem;
-            font-family: inherit;
-            background: #fff;
-        }
-        .form-section textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-
-        /* ===== FOOTER ===== */
-        footer {
-            background: #1e1e1e;
-            color: #ccc;
-            padding: 40px 0;
-            margin-top: 40px;
-        }
-        footer a {
-            color: #b8863a;
-            text-decoration: none;
-        }
-        .footer-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr;
-            gap: 40px;
-        }
-        .footer-grid h4 {
-            color: #fff;
-            margin-bottom: 12px;
-        }
-
-        /* ===== RESPONSIVE ===== */
+        /* ===== ВЕСЬ ТВОЙ СТАРЫЙ CSS (БЕЗ ИЗМЕНЕНИЙ) ===== */
+        /* Я оставляю его таким же, как у тебя, просто не дублирую для экономии места */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f8f5f0; color: #1e1e1e; line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        img { max-width: 100%; display: block; border-radius: 12px; }
+        .btn { display: inline-block; background: #2c3e2f; color: #fff; padding: 14px 32px; border-radius: 60px; text-decoration: none; font-weight: 600; border: none; cursor: pointer; transition: 0.3s; font-size: 1rem; }
+        .btn:hover { background: #1f2c21; transform: scale(1.02); }
+        .btn-outline { background: transparent; border: 2px solid #2c3e2f; color: #2c3e2f; }
+        .btn-outline:hover { background: #2c3e2f; color: #fff; }
+        .section-title { font-size: 2.2rem; font-weight: 700; margin-bottom: 24px; letter-spacing: -0.02em; }
+        .section-subtitle { color: #5a5a5a; margin-bottom: 40px; font-size: 1.15rem; }
+        header { background: #fff; padding: 16px 0; box-shadow: 0 2px 20px rgba(0,0,0,0.04); position: sticky; top: 0; z-index: 100; }
+        .header-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .logo { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.03em; }
+        .logo span { color: #b8863a; }
+        .nav { display: flex; gap: 28px; font-weight: 500; }
+        .nav a { text-decoration: none; color: #1e1e1e; transition: 0.2s; }
+        .nav a:hover { color: #b8863a; }
+        .header-phone { font-weight: 600; color: #2c3e2f; }
+        .hero { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; padding: 60px 0 80px; }
+        .hero h1 { font-size: 3.2rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; }
+        .hero h1 span { color: #b8863a; }
+        .hero p { font-size: 1.2rem; color: #3d3d3d; margin: 20px 0 32px; }
+        .hero-buttons { display: flex; gap: 16px; flex-wrap: wrap; }
+        .hero-image { background: #e8e0d8; border-radius: 20px; overflow: hidden; min-height: 320px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #7a7a7a; }
+        .hero-image img { width: 100%; height: 100%; object-fit: cover; min-height: 320px; }
+        .benefits { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; padding: 40px 0 60px; border-top: 1px solid #ddd; }
+        .benefit-item { text-align: center; }
+        .benefit-item h3 { font-size: 1.5rem; margin-bottom: 6px; }
+        .benefit-item p { color: #555; }
+        .catalog-controls { display: flex; gap: 12px; margin-bottom: 32px; flex-wrap: wrap; }
+        .filter-btn { padding: 8px 20px; border-radius: 40px; border: 1px solid #ccc; background: #fff; cursor: pointer; font-weight: 500; transition: 0.2s; }
+        .filter-btn.active { background: #2c3e2f; color: #fff; border-color: #2c3e2f; }
+        .catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; margin-bottom: 60px; }
+        .product-card { background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.05); transition: 0.3s; }
+        .product-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.1); transform: translateY(-4px); }
+        .product-card .image { height: 220px; background: #e0d8d0; display: flex; align-items: center; justify-content: center; color: #888; font-size: 0.9rem; }
+        .product-card .image img { width: 100%; height: 100%; object-fit: cover; }
+        .product-card .body { padding: 20px; }
+        .product-card .body h3 { font-size: 1.2rem; margin-bottom: 6px; }
+        .product-card .body .status { font-size: 0.85rem; color: #b8863a; font-weight: 600; }
+        .product-card .body .price { font-size: 1.6rem; font-weight: 700; margin: 10px 0 14px; }
+        .product-card .body .desc { color: #555; font-size: 0.95rem; margin-bottom: 14px; }
+        .restoration { background: #e8e0d8; padding: 60px 0; border-radius: 24px; margin: 40px 0; }
+        .restoration .container { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .restoration h2 { font-size: 2.4rem; font-weight: 700; }
+        .restoration ul { list-style: none; margin: 20px 0 30px; }
+        .restoration ul li { padding: 8px 0 8px 28px; background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b8863a%22 stroke-width=%223%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%2220 6 9 17 4 12%22/></svg>') left center no-repeat; background-size: 18px; }
+        .restoration .btn { margin-top: 8px; }
+        .form-section { padding: 60px 0; }
+        .form-section form { max-width: 600px; display: flex; flex-direction: column; gap: 18px; }
+        .form-section input, .form-section textarea { padding: 14px 18px; border-radius: 12px; border: 1px solid #ccc; font-size: 1rem; font-family: inherit; background: #fff; }
+        .form-section textarea { min-height: 120px; resize: vertical; }
+        footer { background: #1e1e1e; color: #ccc; padding: 40px 0; margin-top: 40px; }
+        footer a { color: #b8863a; text-decoration: none; }
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 40px; }
+        .footer-grid h4 { color: #fff; margin-bottom: 12px; }
         @media (max-width: 768px) {
-            .hero {
-                grid-template-columns: 1fr;
-                text-align: center;
-                padding: 30px 0 40px;
-            }
-            .hero h1 {
-                font-size: 2.4rem;
-            }
-            .hero-buttons {
-                justify-content: center;
-            }
-            .benefits {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            .restoration .container {
-                grid-template-columns: 1fr;
-            }
-            .footer-grid {
-                grid-template-columns: 1fr;
-            }
-            .nav {
-                gap: 14px;
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-            .header-inner {
-                flex-direction: column;
-            }
-            .section-title {
-                font-size: 1.8rem;
-            }
+            .hero { grid-template-columns: 1fr; text-align: center; padding: 30px 0 40px; }
+            .hero h1 { font-size: 2.4rem; }
+            .hero-buttons { justify-content: center; }
+            .benefits { grid-template-columns: 1fr; gap: 20px; }
+            .restoration .container { grid-template-columns: 1fr; }
+            .footer-grid { grid-template-columns: 1fr; }
+            .nav { gap: 14px; flex-wrap: wrap; justify-content: center; }
+            .header-inner { flex-direction: column; }
+            .section-title { font-size: 1.8rem; }
         }
     </style>
 </head>
@@ -422,63 +140,46 @@
         </div>
     </section>
 
-  <!-- ===== RESTORATION SERVICE ===== -->
-<section id="restoration" class="restoration">
-    <div class="container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center;">
+    <!-- ===== RESTORATION SERVICE ===== -->
+    <section id="restoration" class="restoration">
+        <div class="container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center;">
+            <div>
+                <h2 style="font-size: 2.4rem; font-weight: 700;">Реставрация по вашему заказу</h2>
+                <p style="font-size:1.1rem; margin:12px 0; font-style: italic; color: #3d3d3d;">
+                    «Вернём первоначальный вид и даже лучше любому предмету мягкой мебели»
+                </p>
+                <ul style="list-style: none; margin: 20px 0 30px; padding: 0;">
+                    <li style="padding: 8px 0 8px 28px; background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b8863a%22 stroke-width=%223%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%2220 6 9 17 4 12%22/></svg>') left center no-repeat; background-size: 18px;">
+                        Замена обивки и поролона
+                    </li>
+                    <li style="padding: 8px 0 8px 28px; background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b8863a%22 stroke-width=%223%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%2220 6 9 17 4 12%22/></svg>') left center no-repeat; background-size: 18px;">
+                        Укрепление каркаса
+                    </li>
+                    <li style="padding: 8px 0 8px 28px; background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b8863a%22 stroke-width=%223%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%2220 6 9 17 4 12%22/></svg>') left center no-repeat; background-size: 18px;">
+                        Тонировка и патинирование
+                    </li>
+                    <li style="padding: 8px 0 8px 28px; background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b8863a%22 stroke-width=%223%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%2220 6 9 17 4 12%22/></svg>') left center no-repeat; background-size: 18px;">
+                        Ручная отстрочка — как на дизайнерской мебели
+                    </li>
+                </ul>
+                <p><strong>Срок:</strong> от 3 до 10 дней в зависимости от сложности.</p>
+            </div>
 
-        <!-- Левая часть: описание -->
-        <div>
-            <h2 style="font-size: 2.4rem; font-weight: 700;">Реставрация по вашему заказу</h2>
-            <p style="font-size:1.1rem; margin:12px 0; font-style: italic; color: #3d3d3d;">
-                «Вернём первоначальный вид и даже лучше любому предмету мягкой мебели»
-            </p>
-            <ul style="list-style: none; margin: 20px 0 30px; padding: 0;">
-                <li style="padding: 8px 0 8px 28px; background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b8863a%22 stroke-width=%223%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%2220 6 9 17 4 12%22/></svg>') left center no-repeat; background-size: 18px;">
-                    Замена обивки и поролона
-                </li>
-                <li style="padding: 8px 0 8px 28px; background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b8863a%22 stroke-width=%223%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%2220 6 9 17 4 12%22/></svg>') left center no-repeat; background-size: 18px;">
-                    Укрепление каркаса
-                </li>
-                <li style="padding: 8px 0 8px 28px; background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b8863a%22 stroke-width=%223%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%2220 6 9 17 4 12%22/></svg>') left center no-repeat; background-size: 18px;">
-                    Тонировка и патинирование
-                </li>
-                <li style="padding: 8px 0 8px 28px; background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b8863a%22 stroke-width=%223%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%2220 6 9 17 4 12%22/></svg>') left center no-repeat; background-size: 18px;">
-                    Ручная отстрочка — как на дизайнерской мебели
-                </li>
-            </ul>
-            <p><strong>Срок:</strong> от 3 до 10 дней в зависимости от сложности.</p>
+            <div style="text-align: center; width: 100%;">
+                <a href="#orderForm" 
+                   style="display: block; background: #2c3e2f; color: #fff; padding: 30px 20px; border-radius: 24px; text-decoration: none; font-weight: 700; font-size: 1.2rem; box-shadow: 0 8px 30px rgba(44, 62, 47, 0.3); transition: 0.3s; width: 100%; max-width: 100%; border: 2px dashed #b8863a; box-sizing: border-box;">
+                    <div style="font-size: 2.8rem; margin-bottom: 6px;">📸</div>
+                    <div>Пришлите фото вашей мебели</div>
+                    <div style="font-size: 0.85rem; font-weight: 400; opacity: 0.8; margin-top: 4px;">Мы оценим за 1 час →</div>
+                </a>
+                <p style="margin-top: 12px; color: #555; font-size: 0.85rem;">
+                    Нажмите, чтобы перейти к форме заявки
+                </p>
+            </div>
         </div>
+    </section>
 
-        <!-- Правая часть: кнопка (исправлена для мобильных) -->
-        <div style="text-align: center; width: 100%;">
-            <a href="#orderForm" 
-               style="display: block; 
-                      background: #2c3e2f; 
-                      color: #fff; 
-                      padding: 30px 20px; 
-                      border-radius: 24px; 
-                      text-decoration: none; 
-                      font-weight: 700; 
-                      font-size: 1.2rem; 
-                      box-shadow: 0 8px 30px rgba(44, 62, 47, 0.3); 
-                      transition: 0.3s; 
-                      width: 100%; 
-                      max-width: 100%;
-                      border: 2px dashed #b8863a;
-                      box-sizing: border-box;">
-                <div style="font-size: 2.8rem; margin-bottom: 6px;">📸</div>
-                <div>Пришлите фото вашей мебели</div>
-                <div style="font-size: 0.85rem; font-weight: 400; opacity: 0.8; margin-top: 4px;">Мы оценим за 1 час →</div>
-            </a>
-            <p style="margin-top: 12px; color: #555; font-size: 0.85rem;">
-                Нажмите, чтобы перейти к форме заявки
-            </p>
-        </div>
-
-    </div>
-</section>
-
-    <!-- ===== ФОРМА С ЗАГРУЗКОЙ ФОТО (РАБОТАЕТ С ТЕЛЕФОНА) ===== -->
+    <!-- ===== ФОРМА С ЗАГРУЗКОЙ ФОТО ===== -->
     <section id="orderForm" class="container form-section">
         <h2 class="section-title">Оставьте заявку</h2>
         <p class="section-subtitle">Пришлите фото вашей мебели — мы оценим её за 1 час.</p>
@@ -487,7 +188,6 @@
             <input type="tel" name="phone" placeholder="Номер телефона" required />
             <input type="text" name="subject" placeholder="Тема: стулья / кресло / реставрация" />
             
-            <!-- Поле для загрузки фото (работает с телефона) -->
             <div style="border:2px dashed #ccc; padding:20px; border-radius:12px; text-align:center; background:#fafafa; cursor:pointer;" onclick="document.getElementById('fileInput').click();">
                 <label for="fileInput" style="cursor:pointer; display:block; font-weight:500;">
                     📸 Нажмите, чтобы выбрать фото (или сделайте снимок)
@@ -533,7 +233,7 @@
 </footer>
 
 <script>
-// ===== УНИВЕРСАЛЬНАЯ ОТПРАВКА (ПК + ТЕЛЕФОН) ЧЕРЕЗ IMGBB =====
+// ===== ИСПРАВЛЕННАЯ ВЕРСИЯ (РАБОТАЕТ БЕЗ IMGBB) =====
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('mainForm');
     const fileInput = document.getElementById('fileInput');
@@ -541,7 +241,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const TOKEN = '8715161032:AAFCUgcYLJbDGjjCk6DrE0cGmlQgVBa1D_8';
     const CHAT_ID = '261458452';
-    const IMGBB_KEY = 'ВАШ_КЛЮЧ_IMG_BB'; // <-- ВСТАВЬ СЮДА КЛЮЧ С IMGBB
 
     fileInput.addEventListener('change', function() {
         const files = this.files;
@@ -561,6 +260,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const message = document.querySelector('[name="message"]').value.trim() || 'Без описания';
         const files = fileInput.files;
 
+        // Отправка текста
         function sendText(photoUrl) {
             const text = '🪑 НОВАЯ ЗАЯВКА%0A'
                 + 'Имя: ' + name + '%0A'
@@ -573,54 +273,52 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(res => res.json());
         }
 
+        // ОТПРАВКА ФОТО ЧЕРЕЗ BLOB (работает на ПК и телефоне)
+        function sendPhoto(file, caption) {
+            const formData = new FormData();
+            formData.append('chat_id', CHAT_ID);
+            formData.append('photo', file);
+            formData.append('caption', caption);
+
+            return fetch('https://api.telegram.org/bot' + TOKEN + '/sendPhoto', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json());
+        }
+
+        // ЕСЛИ ЕСТЬ ФОТО — отправляем
         if (files.length > 0) {
-            // === ЗАГРУЗКА ФОТО НА IMGBB ===
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const base64 = event.target.result.split(',')[1]; // Убираем мета-часть
-
-                const formData = new FormData();
-                formData.append('key', IMGBB_KEY);
-                formData.append('image', base64);
-                formData.append('name', files[0].name || 'photo.jpg');
-
-                fetch('https://api.imgbb.com/1/upload', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(res => res.json())
+            sendPhoto(files[0], '📸 Фото от ' + name)
                 .then(data => {
-                    if (data.success) {
-                        const photoUrl = data.data.url;
-                        alert('✅ Фото загружено на ImgBB!');
-                        return sendText(photoUrl);
+                    if (data.ok) {
+                        return sendText('Приложено ' + files.length + ' фото');
                     } else {
-                        alert('❌ Ошибка загрузки на ImgBB: ' + JSON.stringify(data));
-                        throw new Error('ImgBB error');
+                        alert('❌ Ошибка отправки фото: ' + JSON.stringify(data));
+                        throw new Error('Photo error');
                     }
                 })
                 .then(data => {
                     if (data && data.ok) {
-                        alert('✅ Заявка с фото отправлена!');
+                        alert('✅ Заявка с фото отправлена! Мы свяжемся с вами.');
+                        form.reset();
                         fileInput.value = '';
                         fileNameDisplay.textContent = 'Файл не выбран';
-                        form.reset();
                     } else {
                         alert('❌ Ошибка отправки текста: ' + JSON.stringify(data));
                     }
                 })
                 .catch(err => {
-                    if (err.message !== 'ImgBB error') {
+                    if (err.message !== 'Photo error') {
                         alert('❌ Ошибка соединения: ' + err.message);
                     }
                 });
-            };
-            reader.readAsDataURL(files[0]);
         } else {
-            sendText(null)
+            // БЕЗ ФОТО — только текст
+            sendText('Не приложено')
                 .then(data => {
                     if (data.ok) {
-                        alert('✅ Заявка отправлена!');
+                        alert('✅ Заявка отправлена! Мы свяжемся с вами.');
                         form.reset();
                         fileInput.value = '';
                         fileNameDisplay.textContent = 'Файл не выбран';
@@ -704,5 +402,6 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 
 renderProducts('all');
 </script>
+
 </body>
 </html>
