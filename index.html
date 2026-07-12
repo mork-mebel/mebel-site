@@ -7,8 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet" />
     <style>
-        /* ===== ВЕСЬ ТВОЙ СТАРЫЙ CSS (БЕЗ ИЗМЕНЕНИЙ) ===== */
-        /* Я оставляю его таким же, как у тебя, просто не дублирую для экономии места */
+        /* ===== RESET & BASE ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: #f8f5f0; color: #1e1e1e; line-height: 1.6; }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
@@ -233,7 +232,7 @@
 </footer>
 
 <script>
-// ===== ИСПРАВЛЕННАЯ ВЕРСИЯ (ТЕКСТ УХОДИТ ГАРАНТИРОВАННО) =====
+// ===== ГАРАНТИРОВАННО РАБОТАЮЩАЯ ВЕРСИЯ (ПРЯМАЯ ОТПРАВКА) =====
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('mainForm');
     const fileInput = document.getElementById('fileInput');
@@ -242,15 +241,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const TOKEN = '8715161032:AAFCUgcYLJbDGjjCk6DrE0cGmlQgVBa1D_8';
     const CHAT_ID = '261458452';
 
+    // Показываем имя файла
     fileInput.addEventListener('change', function() {
         const files = this.files;
-        if (files.length === 0) {
-            fileNameDisplay.textContent = 'Файл не выбран';
-        } else {
-            fileNameDisplay.textContent = '📎 Выбрано ' + files.length + ' файлов (первый: ' + files[0].name + ')';
-        }
+        fileNameDisplay.textContent = files.length === 0 ? 'Файл не выбран' : '📎 Выбрано ' + files.length + ' файлов';
     });
 
+    // Отправка формы
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -260,15 +257,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const message = document.querySelector('[name="message"]').value.trim() || 'Без описания';
         const files = fileInput.files;
 
-        // === ФУНКЦИЯ ОТПРАВКИ ТЕКСТА (через FormData) ===
-        function sendText(photoInfo) {
-            const text = '🪑 НОВАЯ ЗАЯВКА\n'
-                + 'Имя: ' + name + '\n'
-                + 'Телефон: ' + phone + '\n'
-                + 'Тема: ' + subject + '\n'
-                + 'Фото: ' + photoInfo + '\n'
-                + 'Сообщение: ' + message;
+        // Формируем текст сообщения
+        let text = '🪑 НОВАЯ ЗАЯВКА\n';
+        text += 'Имя: ' + name + '\n';
+        text += 'Телефон: ' + phone + '\n';
+        text += 'Тема: ' + subject + '\n';
+        text += 'Сообщение: ' + message + '\n';
+        text += 'Фото: ' + (files.length > 0 ? 'Приложено ' + files.length + ' шт.' : 'Не приложено');
 
+        // Отправляем текст
+        function sendText() {
             const formData = new FormData();
             formData.append('chat_id', CHAT_ID);
             formData.append('text', text);
@@ -280,12 +278,12 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(res => res.json());
         }
 
-        // === ФУНКЦИЯ ОТПРАВКИ ФОТО ===
-        function sendPhoto(file, caption) {
+        // Отправляем фото
+        function sendPhoto(file) {
             const formData = new FormData();
             formData.append('chat_id', CHAT_ID);
             formData.append('photo', file);
-            formData.append('caption', caption);
+            formData.append('caption', '📸 Фото от ' + name);
 
             return fetch('https://api.telegram.org/bot' + TOKEN + '/sendPhoto', {
                 method: 'POST',
@@ -294,20 +292,19 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(res => res.json());
         }
 
-        // === ЕСЛИ ЕСТЬ ФОТО ===
+        // Если есть фото — отправляем сначала фото, потом текст
         if (files.length > 0) {
-            sendPhoto(files[0], '📸 Фото от ' + name)
+            sendPhoto(files[0])
                 .then(data => {
-                    if (data.ok) {
-                        return sendText('Приложено ' + files.length + ' фото');
-                    } else {
+                    if (!data.ok) {
                         alert('❌ Ошибка отправки фото: ' + JSON.stringify(data));
                         throw new Error('Photo error');
                     }
+                    return sendText();
                 })
                 .then(data => {
-                    if (data && data.ok) {
-                        alert('✅ Заявка с фото отправлена! Мы свяжемся с вами.');
+                    if (data.ok) {
+                        alert('✅ Заявка с фото отправлена!');
                         form.reset();
                         fileInput.value = '';
                         fileNameDisplay.textContent = 'Файл не выбран';
@@ -321,14 +318,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
         } else {
-            // === БЕЗ ФОТО ===
-            sendText('Не приложено')
+            // Без фото — только текст
+            sendText()
                 .then(data => {
                     if (data.ok) {
-                        alert('✅ Заявка отправлена! Мы свяжемся с вами.');
+                        alert('✅ Заявка отправлена!');
                         form.reset();
-                        fileInput.value = '';
-                        fileNameDisplay.textContent = 'Файл не выбран';
                     } else {
                         alert('❌ Ошибка отправки: ' + JSON.stringify(data));
                     }
@@ -340,7 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// ===== КАТАЛОГ (БЕЗ ИЗМЕНЕНИЙ) =====
+// ===== КАТАЛОГ =====
 const products = [
     {
         id: 1,
