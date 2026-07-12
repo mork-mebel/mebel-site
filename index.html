@@ -233,7 +233,7 @@
 </footer>
 
 <script>
-// ===== ИСПРАВЛЕННАЯ ВЕРСИЯ (РАБОТАЕТ БЕЗ IMGBB) =====
+// ===== ИСПРАВЛЕННАЯ ВЕРСИЯ (ТЕКСТ УХОДИТ ГАРАНТИРОВАННО) =====
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('mainForm');
     const fileInput = document.getElementById('fileInput');
@@ -260,20 +260,27 @@ document.addEventListener('DOMContentLoaded', function() {
         const message = document.querySelector('[name="message"]').value.trim() || 'Без описания';
         const files = fileInput.files;
 
-        // Отправка текста
-        function sendText(photoUrl) {
-            const text = '🪑 НОВАЯ ЗАЯВКА%0A'
-                + 'Имя: ' + name + '%0A'
-                + 'Телефон: ' + phone + '%0A'
-                + 'Тема: ' + subject + '%0A'
-                + 'Фото: ' + (photoUrl || 'Не приложено') + '%0A'
+        // === ФУНКЦИЯ ОТПРАВКИ ТЕКСТА (через FormData) ===
+        function sendText(photoInfo) {
+            const text = '🪑 НОВАЯ ЗАЯВКА\n'
+                + 'Имя: ' + name + '\n'
+                + 'Телефон: ' + phone + '\n'
+                + 'Тема: ' + subject + '\n'
+                + 'Фото: ' + photoInfo + '\n'
                 + 'Сообщение: ' + message;
 
-            return fetch('https://api.telegram.org/bot' + TOKEN + '/sendMessage?chat_id=' + CHAT_ID + '&text=' + text)
-                .then(res => res.json());
+            const formData = new FormData();
+            formData.append('chat_id', CHAT_ID);
+            formData.append('text', text);
+
+            return fetch('https://api.telegram.org/bot' + TOKEN + '/sendMessage', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json());
         }
 
-        // ОТПРАВКА ФОТО ЧЕРЕЗ BLOB (работает на ПК и телефоне)
+        // === ФУНКЦИЯ ОТПРАВКИ ФОТО ===
         function sendPhoto(file, caption) {
             const formData = new FormData();
             formData.append('chat_id', CHAT_ID);
@@ -287,7 +294,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(res => res.json());
         }
 
-        // ЕСЛИ ЕСТЬ ФОТО — отправляем
+        // === ЕСЛИ ЕСТЬ ФОТО ===
         if (files.length > 0) {
             sendPhoto(files[0], '📸 Фото от ' + name)
                 .then(data => {
@@ -314,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
         } else {
-            // БЕЗ ФОТО — только текст
+            // === БЕЗ ФОТО ===
             sendText('Не приложено')
                 .then(data => {
                     if (data.ok) {
