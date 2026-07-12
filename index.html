@@ -232,7 +232,7 @@
 </footer>
 
 <script>
-// ===== ФИНАЛЬНАЯ ВЕРСИЯ: ФОТО ЧЕРЕЗ IMGBB (КЛЮЧ ВСТАВЛЕН) =====
+// ===== ИСПРАВЛЕННАЯ ВЕРСИЯ (СБРОС ПОСЛЕ КАЖДОЙ ОТПРАВКИ) =====
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('mainForm');
     const fileInput = document.getElementById('fileInput');
@@ -247,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fileNameDisplay.textContent = files.length === 0 ? 'Файл не выбран' : '📎 Выбрано ' + files.length + ' файлов';
     });
 
-    // === ФУНКЦИЯ ОТПРАВКИ ТЕКСТА В TELEGRAM ===
+    // === ФУНКЦИЯ ОТПРАВКИ ТЕКСТА ===
     function sendText(name, phone, subject, message, photoInfo) {
         const text = '🪑 НОВАЯ ЗАЯВКА\n'
             + 'Имя: ' + name + '\n'
@@ -269,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // === ФУНКЦИЯ ЗАГРУЗКИ ФОТО НА IMGBB ===
     function uploadToImgBB(file) {
         return new Promise((resolve, reject) => {
-            const reader = new FileReader();
+            const reader = new FileReader(); // СОЗДАЁМ НОВЫЙ reader КАЖДЫЙ РАЗ
             reader.onload = function(event) {
                 const base64 = event.target.result.split(',')[1];
 
@@ -308,7 +308,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const files = fileInput.files;
 
         if (files.length > 0) {
-            uploadToImgBB(files[0])
+            // ПРИНУДИТЕЛЬНО ОБНУЛЯЕМ ПОЛЕ, ЧТОБЫ НЕ БЫЛО ПОВТОРОВ
+            const currentFile = files[0];
+            fileInput.value = ''; // <-- ЭТО ГЛАВНОЕ ИСПРАВЛЕНИЕ
+
+            uploadToImgBB(currentFile)
                 .then(photoUrl => {
                     return sendText(name, phone, subject, message, 'Ссылка на фото: ' + photoUrl);
                 })
@@ -316,7 +320,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.ok) {
                         alert('✅ Заявка с фото отправлена! Ссылка на фото в Telegram.');
                         form.reset();
-                        fileInput.value = '';
                         fileNameDisplay.textContent = 'Файл не выбран';
                     } else {
                         alert('❌ Ошибка отправки текста: ' + JSON.stringify(data));
