@@ -232,40 +232,62 @@
 </footer>
 
 <script>
-// ===== ФИНАЛЬНАЯ ВЕРСИЯ: ФОТО ЧЕРЕЗ IMGBB (С ФИКСОМ ДЛЯ ТЕЛЕФОНА) =====
+// ===== АБСОЛЮТНО РАБОЧАЯ ВЕРСИЯ (ПОЛНЫЙ СБРОС ЧЕРЕЗ КЛОНИРОВАНИЕ) =====
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('mainForm');
-    const fileInput = document.getElementById('fileInput');
-    const fileNameDisplay = document.getElementById('fileName');
+    let fileInput = document.getElementById('fileInput'); // делаем переменной
+    let fileNameDisplay = document.getElementById('fileName');
 
     const TOKEN = '8715161032:AAFCUgcYLJbDGjjCk6DrE0cGmlQgVBa1D_8';
     const CHAT_ID = '261458452';
     const IMGBB_KEY = '7601a4841cc4820a9cca9de8317f539e';
 
-    // === ФИКС ДЛЯ ТЕЛЕФОНА: принудительное обновление имени файла ===
-    function updateFileName() {
-        const files = fileInput.files;
-        if (files.length === 0) {
-            fileNameDisplay.textContent = 'Файл не выбран';
-        } else {
-            fileNameDisplay.textContent = '📎 Выбрано ' + files.length + ' файлов (первый: ' + files[0].name + ')';
+    // === ФУНКЦИЯ ПРИНУДИТЕЛЬНОГО СБРОСА ПОЛЯ ===
+    function resetFileInput() {
+        // Создаём новый input такого же типа
+        const newInput = document.createElement('input');
+        newInput.type = 'file';
+        newInput.id = 'fileInput';
+        newInput.name = 'photo';
+        newInput.accept = 'image/*';
+        newInput.style.display = 'none';
+
+        // Заменяем старый input новым
+        fileInput.parentNode.replaceChild(newInput, fileInput);
+        fileInput = newInput;
+        fileNameDisplay.textContent = 'Файл не выбран';
+
+        // Заново вешаем обработчики на новый input
+        fileInput.addEventListener('change', function() {
+            const files = this.files;
+            fileNameDisplay.textContent = files.length === 0 ? 'Файл не выбран' : '📎 Выбрано ' + files.length + ' файлов';
+        });
+
+        // Клик по области должен открывать новый input
+        const dropZone = document.querySelector('.form-section div[style*="dashed"]');
+        if (dropZone) {
+            dropZone.onclick = function() {
+                fileInput.click();
+            };
         }
     }
 
-    // Обработчик change
-    fileInput.addEventListener('change', function() {
-        updateFileName();
-    });
+    // === ИНИЦИАЛИЗАЦИЯ ===
+    function initFileInput() {
+        fileInput.addEventListener('change', function() {
+            const files = this.files;
+            fileNameDisplay.textContent = files.length === 0 ? 'Файл не выбран' : '📎 Выбрано ' + files.length + ' файлов';
+        });
 
-    // КОСТЫЛЬ ДЛЯ ТЕЛЕФОНА: если change не сработал, проверяем через 0.5 секунды
-    fileInput.addEventListener('click', function() {
-        setTimeout(updateFileName, 500);
-    });
-
-    // ДЛЯ СТАРЫХ БРАУЗЕРОВ: проверяем при фокусе
-    fileInput.addEventListener('focus', function() {
-        setTimeout(updateFileName, 500);
-    });
+        // Клик по области для открытия выбора файла
+        const dropZone = document.querySelector('.form-section div[style*="dashed"]');
+        if (dropZone) {
+            dropZone.onclick = function() {
+                fileInput.click();
+            };
+        }
+    }
+    initFileInput();
 
     // === ФУНКЦИЯ ОТПРАВКИ ТЕКСТА ===
     function sendText(name, phone, subject, message, photoInfo) {
@@ -292,7 +314,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const reader = new FileReader();
             reader.onload = function(event) {
                 const base64 = event.target.result.split(',')[1];
-
                 const formData = new FormData();
                 formData.append('key', IMGBB_KEY);
                 formData.append('image', base64);
@@ -329,7 +350,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (files.length > 0) {
             const currentFile = files[0];
-            fileInput.value = ''; // сбрасываем поле
+
+            // === ГЛАВНОЕ: СРАЗУ СБРАСЫВАЕМ ПОЛЕ ===
+            resetFileInput();
 
             uploadToImgBB(currentFile)
                 .then(photoUrl => {
@@ -337,9 +360,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .then(data => {
                     if (data.ok) {
-                        alert('✅ Заявка с фото отправлена! Ссылка на фото в Telegram.');
+                        alert('✅ Заявка с фото отправлена!');
                         form.reset();
-                        fileNameDisplay.textContent = 'Файл не выбран';
                     } else {
                         alert('❌ Ошибка отправки текста: ' + JSON.stringify(data));
                     }
@@ -353,8 +375,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.ok) {
                         alert('✅ Заявка отправлена!');
                         form.reset();
-                        fileInput.value = '';
-                        fileNameDisplay.textContent = 'Файл не выбран';
+                        resetFileInput();
                     } else {
                         alert('❌ Ошибка отправки: ' + JSON.stringify(data));
                     }
