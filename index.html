@@ -232,7 +232,7 @@
 </footer>
 
 <script>
-// ===== ФИНАЛЬНАЯ ВЕРСИЯ: ОТПРАВКА ТЕКСТА + СЖАТОГО ФОТО =====
+// ===== ФИНАЛЬНАЯ ВЕРСИЯ: ФОТО ЧЕРЕЗ IMGBB (КЛЮЧ ВСТАВЛЕН) =====
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('mainForm');
     const fileInput = document.getElementById('fileInput');
@@ -240,63 +240,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const TOKEN = '8715161032:AAFCUgcYLJbDGjjCk6DrE0cGmlQgVBa1D_8';
     const CHAT_ID = '261458452';
+    const IMGBB_KEY = '7601a4841cc4820a9cca9de8317f539e';
 
-    // Показываем имя файла
     fileInput.addEventListener('change', function() {
         const files = this.files;
         fileNameDisplay.textContent = files.length === 0 ? 'Файл не выбран' : '📎 Выбрано ' + files.length + ' файлов';
     });
 
-    // === ФУНКЦИЯ СЖАТИЯ ФОТО (уменьшает до 1 МБ) ===
-    function compressImage(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() {
-                    // Создаём canvas для сжатия
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-
-                    // Уменьшаем максимальный размер до 1200px (это даёт ~1 МБ)
-                    const maxSize = 1200;
-                    if (width > height) {
-                        if (width > maxSize) {
-                            height = height * (maxSize / width);
-                            width = maxSize;
-                        }
-                    } else {
-                        if (height > maxSize) {
-                            width = width * (maxSize / height);
-                            height = maxSize;
-                        }
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    // Конвертируем в JPEG с качеством 0.85
-                    canvas.toBlob(function(blob) {
-                        // Создаём новый файл из сжатого Blob
-                        const compressedFile = new File([blob], file.name || 'photo.jpg', {
-                            type: 'image/jpeg',
-                            lastModified: Date.now()
-                        });
-                        resolve(compressedFile);
-                    }, 'image/jpeg', 0.85);
-                };
-                img.onerror = reject;
-                img.src = event.target.result;
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-    }
-
-    // === ФУНКЦИЯ ОТПРАВКИ ТЕКСТА ===
+    // === ФУНКЦИЯ ОТПРАВКИ ТЕКСТА В TELEGRAM ===
     function sendText(name, phone, subject, message, photoInfo) {
         const text = '🪑 НОВАЯ ЗАЯВКА\n'
             + 'Имя: ' + name + '\n'
@@ -315,20 +266,38 @@ document.addEventListener('DOMContentLoaded', function() {
         }).then(res => res.json());
     }
 
-    // === ФУНКЦИЯ ОТПРАВКИ СЖАТОГО ФОТО ===
-    function sendPhoto(file, caption) {
-        const formData = new FormData();
-        formData.append('chat_id', CHAT_ID);
-        formData.append('photo', file, file.name || 'photo.jpg');
-        formData.append('caption', caption);
+    // === ФУНКЦИЯ ЗАГРУЗКИ ФОТО НА IMGBB ===
+    function uploadToImgBB(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const base64 = event.target.result.split(',')[1];
 
-        return fetch('https://api.telegram.org/bot' + TOKEN + '/sendPhoto', {
-            method: 'POST',
-            body: formData
-        }).then(res => res.json());
+                const formData = new FormData();
+                formData.append('key', IMGBB_KEY);
+                formData.append('image', base64);
+                formData.append('name', file.name || 'photo.jpg');
+
+                fetch('https://api.imgbb.com/1/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        resolve(data.data.url);
+                    } else {
+                        reject('Ошибка ImgBB: ' + JSON.stringify(data));
+                    }
+                })
+                .catch(reject);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
     }
 
-    // === ОБРАБОТКА ОТПРАВКИ ФОРМЫ ===
+    // === ОБРАБОТКА ФОРМЫ ===
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -338,48 +307,29 @@ document.addEventListener('DOMContentLoaded', function() {
         const message = document.querySelector('[name="message"]').value.trim() || 'Без описания';
         const files = fileInput.files;
 
-        // Если есть фото — сжимаем и отправляем
         if (files.length > 0) {
-            compressImage(files[0])
-                .then(compressedFile => {
-                    return sendPhoto(compressedFile, '📸 Фото от ' + name);
-                })
-                .then(data => {
-                    if (!data.ok) {
-                        // Если сжатое фото не отправилось — пробуем отправить оригинал (на всякий случай)
-                        return sendPhoto(files[0], '📸 Фото от ' + name + ' (оригинал)');
-                    }
-                    return data;
+            uploadToImgBB(files[0])
+                .then(photoUrl => {
+                    return sendText(name, phone, subject, message, 'Ссылка на фото: ' + photoUrl);
                 })
                 .then(data => {
                     if (data.ok) {
-                        return sendText(name, phone, subject, message, 'Приложено сжатое фото');
-                    } else {
-                        alert('❌ Ошибка отправки фото: ' + JSON.stringify(data));
-                        throw new Error('Photo error');
-                    }
-                })
-                .then(data => {
-                    if (data && data.ok) {
-                        alert('✅ Заявка с фото отправлена! Мы свяжемся с вами.');
+                        alert('✅ Заявка с фото отправлена! Ссылка на фото в Telegram.');
                         form.reset();
                         fileInput.value = '';
                         fileNameDisplay.textContent = 'Файл не выбран';
-                    } else if (data) {
+                    } else {
                         alert('❌ Ошибка отправки текста: ' + JSON.stringify(data));
                     }
                 })
                 .catch(err => {
-                    if (err.message !== 'Photo error') {
-                        alert('❌ Ошибка соединения: ' + err.message);
-                    }
+                    alert('❌ Ошибка загрузки фото: ' + err);
                 });
         } else {
-            // === БЕЗ ФОТО ===
             sendText(name, phone, subject, message, 'Не приложено')
                 .then(data => {
                     if (data.ok) {
-                        alert('✅ Заявка отправлена! Мы свяжемся с вами.');
+                        alert('✅ Заявка отправлена!');
                         form.reset();
                         fileInput.value = '';
                         fileNameDisplay.textContent = 'Файл не выбран';
