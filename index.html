@@ -232,80 +232,61 @@
 </footer>
 
 <script>
-// ===== АБСОЛЮТНО РАБОЧАЯ ВЕРСИЯ (ПОЛНЫЙ СБРОС ЧЕРЕЗ КЛОНИРОВАНИЕ) =====
+// ===== УНИВЕРСАЛЬНАЯ ОТПРАВКА: TELEGRAM + MAILTO =====
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('mainForm');
-    let fileInput = document.getElementById('fileInput'); // делаем переменной
+    let fileInput = document.getElementById('fileInput');
     let fileNameDisplay = document.getElementById('fileName');
 
     const TOKEN = '8715161032:AAFCUgcYLJbDGjjCk6DrE0cGmlQgVBa1D_8';
     const CHAT_ID = '261458452';
     const IMGBB_KEY = '7601a4841cc4820a9cca9de8317f539e';
+    const YOUR_EMAIL = 'daniltsev.mh@gmail.com'; // <-- ВСТАВЬ СВОЮ ПОЧТУ
 
-    // === ФУНКЦИЯ ПРИНУДИТЕЛЬНОГО СБРОСА ПОЛЯ ===
+    // === ФУНКЦИЯ СБРОСА ПОЛЯ ===
     function resetFileInput() {
-        // Создаём новый input такого же типа
         const newInput = document.createElement('input');
         newInput.type = 'file';
         newInput.id = 'fileInput';
         newInput.name = 'photo';
         newInput.accept = 'image/*';
         newInput.style.display = 'none';
-
-        // Заменяем старый input новым
         fileInput.parentNode.replaceChild(newInput, fileInput);
         fileInput = newInput;
         fileNameDisplay.textContent = 'Файл не выбран';
-
-        // Заново вешаем обработчики на новый input
         fileInput.addEventListener('change', function() {
             const files = this.files;
             fileNameDisplay.textContent = files.length === 0 ? 'Файл не выбран' : '📎 Выбрано ' + files.length + ' файлов';
         });
-
-        // Клик по области должен открывать новый input
         const dropZone = document.querySelector('.form-section div[style*="dashed"]');
-        if (dropZone) {
-            dropZone.onclick = function() {
-                fileInput.click();
-            };
-        }
+        if (dropZone) dropZone.onclick = function() { fileInput.click(); };
     }
 
-    // === ИНИЦИАЛИЗАЦИЯ ===
-    function initFileInput() {
-        fileInput.addEventListener('change', function() {
-            const files = this.files;
-            fileNameDisplay.textContent = files.length === 0 ? 'Файл не выбран' : '📎 Выбрано ' + files.length + ' файлов';
-        });
-
-        // Клик по области для открытия выбора файла
-        const dropZone = document.querySelector('.form-section div[style*="dashed"]');
-        if (dropZone) {
-            dropZone.onclick = function() {
-                fileInput.click();
-            };
-        }
-    }
-    initFileInput();
-
-    // === ФУНКЦИЯ ОТПРАВКИ ТЕКСТА ===
-    function sendText(name, phone, subject, message, photoInfo) {
-        const text = '🪑 НОВАЯ ЗАЯВКА\n'
-            + 'Имя: ' + name + '\n'
-            + 'Телефон: ' + phone + '\n'
-            + 'Тема: ' + subject + '\n'
-            + 'Фото: ' + photoInfo + '\n'
-            + 'Сообщение: ' + message;
-
+    // === ФУНКЦИЯ ОТПРАВКИ В TELEGRAM ===
+    function sendToTelegram(text) {
         const formData = new FormData();
         formData.append('chat_id', CHAT_ID);
         formData.append('text', text);
-
         return fetch('https://api.telegram.org/bot' + TOKEN + '/sendMessage', {
             method: 'POST',
             body: formData
-        }).then(res => res.json());
+        })
+        .then(res => res.json())
+        .catch(err => ({ ok: false, error: err }));
+    }
+
+    // === ФУНКЦИЯ ОТПРАВКИ НА ПОЧТУ (через mailto) ===
+    function sendToMail(name, phone, subject, message, photoUrl) {
+        const subjectEncoded = encodeURIComponent('Новая заявка с сайта: ' + subject);
+        let body = 'Имя: ' + name + '%0A';
+        body += 'Телефон: ' + phone + '%0A';
+        body += 'Тема: ' + subject + '%0A';
+        body += 'Сообщение: ' + message + '%0A';
+        body += 'Фото: ' + (photoUrl || 'Не приложено');
+        const mailtoLink = 'mailto:' + YOUR_EMAIL + '?subject=' + subjectEncoded + '&body=' + body;
+        // Открываем почтовый клиент
+        window.open(mailtoLink, '_blank');
+        return Promise.resolve();
     }
 
     // === ФУНКЦИЯ ЗАГРУЗКИ ФОТО НА IMGBB ===
@@ -318,18 +299,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 formData.append('key', IMGBB_KEY);
                 formData.append('image', base64);
                 formData.append('name', file.name || 'photo.jpg');
-
                 fetch('https://api.imgbb.com/1/upload', {
                     method: 'POST',
                     body: formData
                 })
                 .then(res => res.json())
                 .then(data => {
-                    if (data.success) {
-                        resolve(data.data.url);
-                    } else {
-                        reject('Ошибка ImgBB: ' + JSON.stringify(data));
-                    }
+                    if (data.success) resolve(data.data.url);
+                    else reject('Ошибка ImgBB: ' + JSON.stringify(data));
                 })
                 .catch(reject);
             };
@@ -348,40 +325,42 @@ document.addEventListener('DOMContentLoaded', function() {
         const message = document.querySelector('[name="message"]').value.trim() || 'Без описания';
         const files = fileInput.files;
 
+        const text = '🪑 НОВАЯ ЗАЯВКА\nИмя: ' + name + '\nТелефон: ' + phone + '\nТема: ' + subject + '\nСообщение: ' + message;
+
         if (files.length > 0) {
             const currentFile = files[0];
-
-            // === ГЛАВНОЕ: СРАЗУ СБРАСЫВАЕМ ПОЛЕ ===
             resetFileInput();
 
             uploadToImgBB(currentFile)
                 .then(photoUrl => {
-                    return sendText(name, phone, subject, message, 'Ссылка на фото: ' + photoUrl);
+                    const fullText = text + '\nФото: ' + photoUrl;
+                    // Пытаемся отправить в Telegram
+                    return sendToTelegram(fullText)
+                        .then(data => {
+                            // Даже если Telegram не работает — отправляем на почту
+                            return sendToMail(name, phone, subject, message, photoUrl);
+                        });
                 })
-                .then(data => {
-                    if (data.ok) {
-                        alert('✅ Заявка с фото отправлена!');
-                        form.reset();
-                    } else {
-                        alert('❌ Ошибка отправки текста: ' + JSON.stringify(data));
-                    }
+                .then(() => {
+                    alert('✅ Заявка отправлена! Мы свяжемся с вами.');
+                    form.reset();
                 })
                 .catch(err => {
-                    alert('❌ Ошибка загрузки фото: ' + err);
+                    alert('❌ Ошибка: ' + err);
                 });
         } else {
-            sendText(name, phone, subject, message, 'Не приложено')
-                .then(data => {
-                    if (data.ok) {
-                        alert('✅ Заявка отправлена!');
-                        form.reset();
-                        resetFileInput();
-                    } else {
-                        alert('❌ Ошибка отправки: ' + JSON.stringify(data));
-                    }
+            const fullText = text + '\nФото: Не приложено';
+            sendToTelegram(fullText)
+                .then(() => {
+                    return sendToMail(name, phone, subject, message, null);
+                })
+                .then(() => {
+                    alert('✅ Заявка отправлена!');
+                    form.reset();
+                    resetFileInput();
                 })
                 .catch(err => {
-                    alert('❌ Ошибка соединения: ' + err.message);
+                    alert('❌ Ошибка: ' + err);
                 });
         }
     });
