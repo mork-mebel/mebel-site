@@ -16,6 +16,10 @@
         .btn:hover { background: #1f2c21; transform: scale(1.02); }
         .btn-outline { background: transparent; border: 2px solid #2c3e2f; color: #2c3e2f; }
         .btn-outline:hover { background: #2c3e2f; color: #fff; }
+        .btn-wa { background: #25D366; }
+        .btn-wa:hover { background: #1da851; }
+        .btn-tg { background: #0088cc; }
+        .btn-tg:hover { background: #006699; }
         .section-title { font-size: 2.2rem; font-weight: 700; margin-bottom: 24px; letter-spacing: -0.02em; }
         .section-subtitle { color: #5a5a5a; margin-bottom: 40px; font-size: 1.15rem; }
         header { background: #fff; padding: 16px 0; box-shadow: 0 2px 20px rgba(0,0,0,0.04); position: sticky; top: 0; z-index: 100; }
@@ -60,6 +64,8 @@
         .form-section form { max-width: 600px; display: flex; flex-direction: column; gap: 18px; }
         .form-section input, .form-section textarea { padding: 14px 18px; border-radius: 12px; border: 1px solid #ccc; font-size: 1rem; font-family: inherit; background: #fff; }
         .form-section textarea { min-height: 120px; resize: vertical; }
+        .social-buttons { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
+        .social-buttons .btn { padding: 10px 20px; font-size: 0.9rem; }
         footer { background: #1e1e1e; color: #ccc; padding: 40px 0; margin-top: 40px; }
         footer a { color: #b8863a; text-decoration: none; }
         .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 40px; }
@@ -74,6 +80,7 @@
             .nav { gap: 14px; flex-wrap: wrap; justify-content: center; }
             .header-inner { flex-direction: column; }
             .section-title { font-size: 1.8rem; }
+            .social-buttons .btn { width: 100%; text-align: center; }
         }
     </style>
 </head>
@@ -199,6 +206,12 @@
             <button type="submit" class="btn">Отправить заявку</button>
             <p style="font-size:0.85rem; color:#777;">Фото отправится безопасно. Мы свяжемся с вами в течение часа.</p>
         </form>
+
+        <!-- ===== КНОПКИ ДЛЯ СВЯЗИ ===== -->
+        <div class="social-buttons">
+            <a href="https://wa.me/79035571945" target="_blank" class="btn btn-wa">💬 Написать в WhatsApp</a>
+            <a href="https://t.me/ilya_v_efire" target="_blank" class="btn btn-tg">💬 Написать в Telegram</a>
+        </div>
     </section>
 
     <!-- ===== CONTACTS ===== -->
@@ -232,16 +245,14 @@
 </footer>
 
 <script>
-// ===== УНИВЕРСАЛЬНАЯ ОТПРАВКА: TELEGRAM + MAILTO =====
+// ===== ОТПРАВКА ТОЛЬКО НА ПОЧТУ (mailto) + ФОТО ЧЕРЕЗ IMGBB =====
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('mainForm');
     let fileInput = document.getElementById('fileInput');
     let fileNameDisplay = document.getElementById('fileName');
 
-    const TOKEN = '8715161032:AAFCUgcYLJbDGjjCk6DrE0cGmlQgVBa1D_8';
-    const CHAT_ID = '261458452';
     const IMGBB_KEY = '7601a4841cc4820a9cca9de8317f539e';
-    const YOUR_EMAIL = 'daniltsev.mh@gmail.com'; // <-- ВСТАВЬ СВОЮ ПОЧТУ
+    const YOUR_EMAIL = 'daniltsev.mh@gmail.com';
 
     // === ФУНКЦИЯ СБРОСА ПОЛЯ ===
     function resetFileInput() {
@@ -260,33 +271,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         const dropZone = document.querySelector('.form-section div[style*="dashed"]');
         if (dropZone) dropZone.onclick = function() { fileInput.click(); };
-    }
-
-    // === ФУНКЦИЯ ОТПРАВКИ В TELEGRAM ===
-    function sendToTelegram(text) {
-        const formData = new FormData();
-        formData.append('chat_id', CHAT_ID);
-        formData.append('text', text);
-        return fetch('https://api.telegram.org/bot' + TOKEN + '/sendMessage', {
-            method: 'POST',
-            body: formData
-        })
-        .then(res => res.json())
-        .catch(err => ({ ok: false, error: err }));
-    }
-
-    // === ФУНКЦИЯ ОТПРАВКИ НА ПОЧТУ (через mailto) ===
-    function sendToMail(name, phone, subject, message, photoUrl) {
-        const subjectEncoded = encodeURIComponent('Новая заявка с сайта: ' + subject);
-        let body = 'Имя: ' + name + '%0A';
-        body += 'Телефон: ' + phone + '%0A';
-        body += 'Тема: ' + subject + '%0A';
-        body += 'Сообщение: ' + message + '%0A';
-        body += 'Фото: ' + (photoUrl || 'Не приложено');
-        const mailtoLink = 'mailto:' + YOUR_EMAIL + '?subject=' + subjectEncoded + '&body=' + body;
-        // Открываем почтовый клиент
-        window.open(mailtoLink, '_blank');
-        return Promise.resolve();
     }
 
     // === ФУНКЦИЯ ЗАГРУЗКИ ФОТО НА IMGBB ===
@@ -315,6 +299,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // === ФУНКЦИЯ ОТПРАВКИ НА ПОЧТУ (через mailto) ===
+    function sendToMail(name, phone, subject, message, photoUrl) {
+        const subjectEncoded = encodeURIComponent('Новая заявка с сайта: ' + subject);
+        let body = 'Имя: ' + name + '%0A';
+        body += 'Телефон: ' + phone + '%0A';
+        body += 'Тема: ' + subject + '%0A';
+        body += 'Сообщение: ' + message + '%0A';
+        body += 'Фото: ' + (photoUrl || 'Не приложено');
+        const mailtoLink = 'mailto:' + YOUR_EMAIL + '?subject=' + subjectEncoded + '&body=' + body;
+        window.open(mailtoLink, '_blank');
+        return Promise.resolve();
+    }
+
     // === ОБРАБОТКА ФОРМЫ ===
     form.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -325,43 +322,26 @@ document.addEventListener('DOMContentLoaded', function() {
         const message = document.querySelector('[name="message"]').value.trim() || 'Без описания';
         const files = fileInput.files;
 
-        const text = '🪑 НОВАЯ ЗАЯВКА\nИмя: ' + name + '\nТелефон: ' + phone + '\nТема: ' + subject + '\nСообщение: ' + message;
-
         if (files.length > 0) {
             const currentFile = files[0];
             resetFileInput();
 
             uploadToImgBB(currentFile)
                 .then(photoUrl => {
-                    const fullText = text + '\nФото: ' + photoUrl;
-                    // Пытаемся отправить в Telegram
-                    return sendToTelegram(fullText)
-                        .then(data => {
-                            // Даже если Telegram не работает — отправляем на почту
-                            return sendToMail(name, phone, subject, message, photoUrl);
-                        });
+                    sendToMail(name, phone, subject, message, photoUrl);
                 })
                 .then(() => {
-                    alert('✅ Заявка отправлена! Мы свяжемся с вами.');
+                    alert('✅ Откройте письмо и нажмите «Отправить».');
                     form.reset();
                 })
                 .catch(err => {
-                    alert('❌ Ошибка: ' + err);
+                    alert('❌ Ошибка загрузки фото: ' + err);
                 });
         } else {
-            const fullText = text + '\nФото: Не приложено';
-            sendToTelegram(fullText)
-                .then(() => {
-                    return sendToMail(name, phone, subject, message, null);
-                })
-                .then(() => {
-                    alert('✅ Заявка отправлена!');
-                    form.reset();
-                    resetFileInput();
-                })
-                .catch(err => {
-                    alert('❌ Ошибка: ' + err);
-                });
+            sendToMail(name, phone, subject, message, null);
+            alert('✅ Откройте письмо и нажмите «Отправить».');
+            form.reset();
+            resetFileInput();
         }
     });
 });
